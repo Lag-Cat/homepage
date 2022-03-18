@@ -1,0 +1,30 @@
+.bui-searchBox {
+  display: flex;
+  flex-wrap: nowrap;
+  border: 2px solid #e3e3e3;
+  border-radius: 999px;
+  overflow: hidden;
+  height: 35px;
+  padding: 5px;
+  transition-property: width, border;
+  transition-duration: 1s;
+  background:#fff;
+
+  .bui-searchBox-field {
+    border: none;
+    border-right: 1px solid #cecece;
+    height: 100%;
+    flex: 1;
+    outline: none;
+  }
+
+  .bui-searchBox-button {
+    border: none;
+    background: none;
+    margin: 0 5px;
+  }
+}
+
+.bui-searchBox-active {
+  border: 2px solid rgb(50, 104, 173);
+}

@@ -1,0 +1,30 @@
+{
+  "id": "3250542",
+  "name": "home-page",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "1078963",
+      "name": "关闭",
+      "font_class": "guanbi",
+      "unicode": "e6b5",
+      "unicode_decimal": 59061
+    },
+    {
+      "icon_id": "5387527",
+      "name": "加号",
+      "font_class": "jiahao",
+      "unicode": "eaf3",
+      "unicode_decimal": 60147
+    },
+    {
+      "icon_id": "4936694",
+      "name": "setting-fill",
+      "font_class": "setting-fill",
+      "unicode": "e871",
+      "unicode_decimal": 59505
+    }
+  ]
+}
