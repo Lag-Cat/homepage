@@ -39,7 +39,6 @@ const Button: React.FC<Props> = (props) => {
 }
 
 const getRadius = (radius: number | boolean | undefined) => {
-    console.log(radius, 111)
     if (radius && typeof (radius) === 'number') {
         return { borderRadius: radius + 'px' }
     } else if (radius === true) {

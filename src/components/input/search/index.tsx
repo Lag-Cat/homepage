@@ -7,6 +7,7 @@ interface Props {
     searchText?: string;
     onSearch?: (searchText?: string) => any;
     onChange?: (searchText?: string) => any;
+    onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => any;
     onMouseEnter?: () => any;
     onMouseLeave?: () => any;
     onFieldFoucs?: () => any;
@@ -34,6 +35,7 @@ const Search: React.FC<Props> = (props) => {
             onChange={onChange}
             onFocus={() => { props.onFieldFoucs && props.onFieldFoucs() }}
             onBlur={() => { props.onFieldBlur && props.onFieldBlur() }}
+            onKeyDown={(e) => { props.onKeyDown && props.onKeyDown(e) }}
         />
         <button
             className="bui-searchBox-button"

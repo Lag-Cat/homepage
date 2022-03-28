@@ -14,22 +14,8 @@
     overflow: hidden;
 
     &-title {
-      text-align: center;
-    }
-
-    &-close {
-      position: absolute;
-      right: 0;
-      top: 0;
-      border: none;
-      background: inherit;
-      height: 40px;
       line-height: 40px;
-      padding: 0 10px;
-      transition: color 0.5s;
-      &:hover {
-        color: rgb(109, 109, 109);
-      }
+      text-align: center;
     }
 
     &::after {
@@ -59,5 +45,21 @@
       width: 83px;
       margin: 0 7px;
     }
+  }
+}
+
+.rc-dialog-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  border: none;
+  background: inherit;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 10px;
+  transition: color 0.5s;
+  z-index: 100;
+  &:hover {
+    color: rgb(109, 109, 109);
   }
 }

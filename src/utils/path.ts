@@ -3,7 +3,6 @@ const getDomain = () => {
 };
 
 const getFavicon = (url: string) => {
-  console.log('favicon');
   let domain = url.match(/http[s]?:\/\/(.*?)([:\/]|$)/);
   if (domain) {
     return domain[0] + '/favicon.ico';

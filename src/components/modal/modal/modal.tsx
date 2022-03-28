@@ -1,8 +1,8 @@
 import React, { ReactNode, useEffect, useState } from "react"
-import Dialog from 'rc-dialog'
 import ReactDOM from "react-dom";
 import './index.less'
 import Button from "@/components/button/button/button";
+import Dialog from 'rc-dialog'
 export interface ModalConfig {
     ok?: boolean;
     okText?: string | ReactNode;
@@ -19,12 +19,14 @@ export interface ModalConfig {
     visible?: boolean
 }
 let container: HTMLDivElement;
-const Modal: React.FC<ModalConfig & { ref?: React.Ref<HTMLDivElement> }> = React.forwardRef((props, ref) => {
+// let dom = document.createElement("div");
+const Modal: React.FC<ModalConfig> = (props) => {
     const [dom, setDom] = useState<HTMLDivElement>(document.createElement("div"));
     let close = () => {
     }
 
     let onClose = () => {
+        console.log("asd")
         if (props.onClose && props.onClose() === false)
             return;
         close();
@@ -57,41 +59,51 @@ const Modal: React.FC<ModalConfig & { ref?: React.Ref<HTMLDivElement> }> = React
         }
     })
 
-    return ReactDOM.createPortal(
-        <div className="bui-modal" ref={ref} onClick={props.onClick} style={props.visible ? {} : { display: "none" }}>
-            <div className="bui-modal-header">
-                <div className="bui-modal-header-title">
 
-                </div>
-                <button className="bui-modal-header-close" onClick={onClose}>
-                    <span className="iconfont icon-guanbi"></span>
-                </button>
-            </div>
-            <div className="bui-modal-content">
-                {props.content}
-            </div>
-            {
-                (props.cancel || props.ok) && <div className="bui-modal-footer">
-                    {props.cancel && <Button type="info" plain block radius onClick={onCancel}>取消</Button>}
-                    {props.ok && <Button type="info" block radius onClick={onConfirm}>保存</Button>}
-                </div>
-            }
-        </div>,
-        dom
-    )
-});
+    const closeIcon = <div className="bui-modal-header-close" onClick={onClose}>
+        <span className="iconfont icon-guanbi"></span>
+    </div>
 
-const getConfirm = (config: ModalConfig) => {
+    return <Dialog
+        {...props}
+        // mousePosition={{ x: window.screenX / 2, y: window.screenY / 2 }}
+        title={_Title(props.title)}
+        onClose={onClose}
+        closeIcon={closeIcon}
+        className="bui-modal">
+        <div className="bui-modal-content">
+            {props.children}
+        </div>
+        {
+            (props.cancel || props.ok) && <div className="bui-modal-footer">
+                {props.cancel && <Button type="info" plain block radius onClick={onCancel}>取消</Button>}
+                {props.ok && <Button type="info" block radius onClick={onConfirm}>保存</Button>}
+            </div>
+        }
+    </Dialog >
+}
+
+const _Title = (title: string | ReactNode) => {
+    return <div className="bui-modal-header">
+        <div className="bui-modal-header-title">
+            {title}
+        </div>
+    </div>
+}
+
+const getConfirm: React.FC<ModalConfig> = (config) => {
     return <Modal {...config} />
 }
 
-const confirm = (withConfig: ModalConfig) => {
+const confirm: React.FC<ModalConfig> = (withConfig) => {
     return getConfirm({
         ok: true,
         cancel: true,
         ...withConfig
     })
 }
+
+
 
 export { confirm }
 
