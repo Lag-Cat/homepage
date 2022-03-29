@@ -4,11 +4,13 @@ import Icon from '../../components/icon/icon'
 import './index.less'
 import '../../asset/iconfont/font_3250542_jbiasqyb1vk/iconfont.css'
 import Field from '@/components/input/field/field'
-import { getConfig, saveNavigatorConfig } from '@/utils/config'
+import { getConfig, getTimestamp, saveNavigatorConfig } from '@/utils/config'
 import { IInitNavigatorItem, initNavigatorItem } from '@/utils/init'
 import Modal, { confirm as Confirm } from '@/components/modal/modal/modal'
 import Badge from '../../components/badge/badge/badge'
 import _Tab from '../../components/tab/tab/index'
+import axios from 'axios'
+import JsonP from 'jsonp'
 
 const { Tab, TabItem } = _Tab
 const backgroundStyle = {
@@ -31,25 +33,36 @@ const Home: React.FC = () => {
     useEffect(() => {
         saveNavigatorConfig(navigator)
     }, [navigator])
+
+    useEffect(() => {
+        getQuickQueryList(searchText)
+    }, [searchText])
+
     return <div className='homepage' style={{ ...backgroundStyle }}>
         <div className='toolbar'>
 
         </div>
         <div className="main-content">
             <div className={'logo'} style={{ ...logoStyle }}></div>
-            <Search
-                className='searchBox'
-                searchText='搜索'
-                value={searchText}
-                onChange={val => setSearchText(val ? val : "")}
-                onKeyDown={event => {
-                    if (event.key === 'Enter')
-                        window.open(`https://www.baidu.com/s?wd=${searchText}`, '_blank')
-                }}
-                onSearch={
-                    () => window.open(`https://www.baidu.com/s?wd=${searchText}`, '_blank')
-                }
-            />
+            <div className='searchBox'>
+                <Search
+                    searchText='搜索'
+                    value={searchText}
+                    onChange={val => setSearchText(val ? val : "")}
+                    onKeyDown={event => {
+                        if (event.key === 'Enter')
+                            window.open(`https://www.baidu.com/s?wd=${searchText}`, '_blank')
+                    }}
+                    onSearch={
+                        () => window.open(`https://www.baidu.com/s?wd=${searchText}`, '_blank')
+                    }
+                />
+                <div>
+                    <ul>
+                        <li></li>
+                    </ul>
+                </div>
+            </div>
             <Tab active={active} onTabChange={(key) => setActive(key)} className="navigator-content" mode="line" >
                 {
                     navigator.data.map((group, key) => {
@@ -124,6 +137,25 @@ const removeNavigatorItem: (navi: INavigatorConfig, itemid: number, groupid: num
             })
         ]
     }
+}
+
+const getQuickQueryList = (searchText: string) => {
+    const cb = `jQuery${getTimestamp()}`
+    const url = `https://www.baidu.com/sugrec?prod=pc&from=pc_web&wd=${encodeURIComponent(searchText)}&cb=${cb}`
+    return new Promise((resolve, reject) => {
+        // fetch(url, { method: 'get' }).then((response) => {
+        //     console.log(response);
+        //     resolve(response)
+        // })
+        (window as any)[cb] = (val: any) => {
+            console.log(val, "test");
+            delete (window as any)[cb]
+        }
+        JsonP(url, {}, (response) => {
+            console.log("test2");
+            resolve(response)
+        })
+    })
 }
 
 export default Home;
