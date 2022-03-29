@@ -1,0 +1,52 @@
+.bui-tab {
+  background: #fff;
+  border-radius: 5px;
+  overflow: hidden;
+  .bui-tab-tabs {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    padding: 0;
+    margin: 0;
+    // background: #ececec;
+    .bui-tab-card {
+      padding: 4px 10px;
+      list-style: none;
+      line-height: 30px;
+      background: #ececec;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
+      cursor: pointer;
+    }
+
+    .bui-tab-card-active {
+      background: #fff;
+    }
+
+    .bui-tab-line {
+      padding: 4px 10px;
+      list-style: none;
+      line-height: 30px;
+      cursor: pointer;
+    }
+
+    .bui-tab-underline {
+      position: absolute;
+      height: 3px;
+      border-radius: 1px;
+      background-color: red;
+      bottom: 0;
+    }
+  }
+
+  .bui-tab-panels {
+    .bui-tab-panel {
+      display: none;
+    }
+
+    .bui-tab-panels-active {
+      display: block;
+    }
+  }
+}
