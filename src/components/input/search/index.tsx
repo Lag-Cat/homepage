@@ -12,6 +12,7 @@ interface Props {
     onMouseLeave?: () => any;
     onFieldFoucs?: () => any;
     onFieldBlur?: () => any;
+    onFieldClick?: (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => any;
     value?: string;
     isShowBorder?: boolean
 }
@@ -36,6 +37,7 @@ const Search: React.FC<Props> = (props) => {
             onFocus={() => { props.onFieldFoucs && props.onFieldFoucs() }}
             onBlur={() => { props.onFieldBlur && props.onFieldBlur() }}
             onKeyDown={(e) => { props.onKeyDown && props.onKeyDown(e) }}
+            onClick={(e) => { props.onFieldClick && props.onFieldClick(e) }}
         />
         <button
             className="bui-searchBox-button"

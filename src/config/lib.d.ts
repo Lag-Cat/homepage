@@ -5,6 +5,7 @@ interface INavigatorConfig {
 
 interface INavigatorItem {
   id: number;
+  title?: string;
   target: string | undefined;
   favicon: string | undefined;
   faviconType: 'url' | 'base64';

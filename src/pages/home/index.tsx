@@ -30,13 +30,32 @@ const Home: React.FC = () => {
     let [navigator, setNavigator] = useState<INavigatorConfig>(getConfig('CONFIG_NAVIGATOR'));
     let [isEditting, setIsEditting] = useState<boolean>(false);
     let [active, setActive] = useState<number>(0);
+    let [quickSearchList, setQuickSearchList] = useState<Array<string>>([]);
+    let [quickSearchVisible, setQuickSearchVisible] = useState<boolean>(false);
     useEffect(() => {
         saveNavigatorConfig(navigator)
     }, [navigator])
 
     useEffect(() => {
-        getQuickQueryList(searchText)
+        if (searchText) {
+            getQuickQueryList(searchText).then((list) => {
+                if ((list as BAIDU_RESPONSE).g) {
+                    setQuickSearchList((list as BAIDU_RESPONSE).g.map(item => item.q));
+                    setQuickSearchVisible(true)
+                } else {
+                    setQuickSearchVisible(false)
+                }
+            })
+        }
+        else {
+            setQuickSearchList([])
+        }
+
     }, [searchText])
+
+    document.onclick = (e) => {
+        setQuickSearchVisible(false);
+    }
 
     return <div className='homepage' style={{ ...backgroundStyle }}>
         <div className='toolbar'>
@@ -56,12 +75,12 @@ const Home: React.FC = () => {
                     onSearch={
                         () => window.open(`https://www.baidu.com/s?wd=${searchText}`, '_blank')
                     }
+                    onFieldClick={(e) => {
+                        quickSearchList.length > 0 && setQuickSearchVisible(true);
+                        e.stopPropagation();
+                    }}
                 />
-                <div>
-                    <ul>
-                        <li></li>
-                    </ul>
-                </div>
+                <QuickSearch quickSearchList={quickSearchList} quickSearchVisible={quickSearchVisible} />
             </div>
             <Tab active={active} onTabChange={(key) => setActive(key)} className="navigator-content" mode="line" >
                 {
@@ -100,7 +119,6 @@ const Home: React.FC = () => {
             onCancel={() => setModal(false)}
         >
             <>
-                <div className='iconfont icon-jiahao'></div>
                 <Field title="目标链接" placeholder='目标链接' value={targetUrl} onChange={(val) => { setTargetUrl(val) }} />
                 <Field title="图标链接" placeholder='图标链接(默认为favicon)' value={faviconUrl} onChange={(val) => { setFaviconUrl(val) }} />
             </>
@@ -139,6 +157,40 @@ const removeNavigatorItem: (navi: INavigatorConfig, itemid: number, groupid: num
     }
 }
 
+const QuickSearch = (props: { quickSearchList: Array<string>, quickSearchVisible: boolean }) => {
+    return <div
+        className='quickSearch'
+        style={{ display: props.quickSearchVisible ? 'block' : 'none' }}
+        onClick={
+            (e) => { e.stopPropagation() }
+        }
+    >
+        <ul className='quickSearch-list'>
+            {
+                props.quickSearchList.map((item, key) => (
+                    <li className='quickSearch-list-item' key={key} onClick={() => window.open(`https://www.baidu.com/s?wd=${item}`, '_blank')}>
+                        <span>{item}</span>
+                    </li>)
+                )
+            }
+        </ul>
+    </div>
+}
+
+interface BAIDU_RESPONSE {
+    g: Array<BAIDU_RESPONSE_G>;
+    p: boolean;
+    q: string;
+    queryid: string;
+    slid: string;
+}
+
+interface BAIDU_RESPONSE_G {
+    q: string;
+    sa: string;
+    type: string;
+}
+
 const getQuickQueryList = (searchText: string) => {
     const cb = `jQuery${getTimestamp()}`
     const url = `https://www.baidu.com/sugrec?prod=pc&from=pc_web&wd=${encodeURIComponent(searchText)}&cb=${cb}`
@@ -147,13 +199,12 @@ const getQuickQueryList = (searchText: string) => {
         //     console.log(response);
         //     resolve(response)
         // })
-        (window as any)[cb] = (val: any) => {
+        (window as any)[cb] = (val: BAIDU_RESPONSE) => {
             console.log(val, "test");
+            resolve(val)
             delete (window as any)[cb]
         }
         JsonP(url, {}, (response) => {
-            console.log("test2");
-            resolve(response)
         })
     })
 }
