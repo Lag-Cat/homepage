@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { ReactElement, ReactNode, useEffect, useRef, useState } from 'react'
 import { TabItemProps } from './tabItem'
 import './index.less'
 import classNames from 'classnames';
@@ -7,7 +7,8 @@ interface TabProps {
     active?: number | string;
     onTabChange?: (activeKey: number) => any;
     className?: string;
-    mode?: 'card' | 'line'
+    mode?: 'card' | 'line',
+    extraRight?: string | ReactElement | ReactNode;
 }
 const Tab: React.FC<TabProps> = (props) => {
     let [linePosition, _setLinePosition] = useState<number>(0);
@@ -33,6 +34,23 @@ const Tab: React.FC<TabProps> = (props) => {
     const setLineWidth = (position: number) => {
         _setLineWidth(position - 20)//padding
     }
+
+    useEffect(() => {
+        let checkWidthFC = checkWidth(0);
+        let interval = setInterval(() => {
+            let dom = getElementByClassName("bui-tab-active", 0)
+            if (dom) {
+                checkWidthFC((dom as any).clientWidth, () => {
+                    setLinePosition((dom as any).offsetLeft)
+                    setLineWidth((dom as any).clientWidth)
+                })
+            }
+        }, 500)
+
+        return () => {
+            clearInterval(interval)
+        }
+    }, [])
 
     return <div className={classNames('bui-tab', props.className)}>
         <ul className="bui-tab-tabs">
@@ -60,6 +78,9 @@ const Tab: React.FC<TabProps> = (props) => {
                 className="bui-tab-underline"
                 style={{ transform: `translateX(${linePosition}px)`, width: `${lineWidth}px`, transitionDuration: "0.3s" }}
             ></div> : null}
+            <li>
+                {props.extraRight}
+            </li>
         </ul>
         <div className='bui-tab-panels'>
             {React.Children.map(props.children, (element: any, index) => {
@@ -73,5 +94,16 @@ const Tab: React.FC<TabProps> = (props) => {
     </div>
 }
 
+const checkWidth = (initWidth: number) => {
+    let preWidth = initWidth;
+    return (currentWidth: number, cb?: Function) => {
+        if (currentWidth !== preWidth) {
+            preWidth = currentWidth;
+            cb?.();
+            return false;
+        }
+        return true;
+    }
+}
 
 export default Tab;

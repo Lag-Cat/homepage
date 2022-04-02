@@ -1,7 +1,7 @@
-import React, { ReactElement } from 'react'
+import React, { ReactElement, ReactNode } from 'react'
 
 export interface TabItemProps {
-    title?: string;
+    title?: string | ReactNode | ReactElement;
     closable?: boolean;
     closeBtn?: ReactElement;
 }

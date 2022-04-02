@@ -6,11 +6,32 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "574002",
+      "name": "编辑",
+      "font_class": "bianji",
+      "unicode": "e66f",
+      "unicode_decimal": 58991
+    },
+    {
+      "icon_id": "28695085",
+      "name": "编辑",
+      "font_class": "bianji-m",
+      "unicode": "eaf5",
+      "unicode_decimal": 60149
+    },
+    {
       "icon_id": "1078963",
       "name": "关闭",
       "font_class": "guanbi",
       "unicode": "e6b5",
       "unicode_decimal": 59061
+    },
+    {
+      "icon_id": "28628217",
+      "name": "关闭",
+      "font_class": "guanbi-m",
+      "unicode": "eaf4",
+      "unicode_decimal": 60148
     },
     {
       "icon_id": "5387527",

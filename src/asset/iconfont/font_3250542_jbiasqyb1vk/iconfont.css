@@ -1,26 +1,39 @@
 @font-face {
-  font-family: 'iconfont'; /* Project id 3250542 */
-  src: url('./iconfont.woff2?t=1647570146255') format('woff2'),
-    url('./iconfont.woff?t=1647570146255') format('woff'),
-    url('./iconfont.ttf?t=1647570146255') format('truetype');
+  font-family: "iconfont"; /* Project id 3250542 */
+  src: url('iconfont.woff2?t=1648860719089') format('woff2'),
+       url('iconfont.woff?t=1648860719089') format('woff'),
+       url('iconfont.ttf?t=1648860719089') format('truetype');
 }
 
 .iconfont {
-  font-family: 'iconfont' !important;
+  font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-bianji:before {
+  content: "\e66f";
+}
+
+.icon-bianji-m:before {
+  content: "\eaf5";
+}
+
 .icon-guanbi:before {
-  content: '\e6b5';
+  content: "\e6b5";
+}
+
+.icon-guanbi-m:before {
+  content: "\eaf4";
 }
 
 .icon-jiahao:before {
-  content: '\eaf3';
+  content: "\eaf3";
 }
 
 .icon-setting-fill:before {
-  content: '\e871';
+  content: "\e871";
 }
+

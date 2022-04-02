@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import Search from '../../components/input/search'
-import Icon from '../../components/icon/icon'
+import IconButton from '../../components/icon/icon/iconButton'
 import './index.less'
-import '../../asset/iconfont/font_3250542_jbiasqyb1vk/iconfont.css'
+// import '../../asset/iconfont/font_3250542_jbiasqyb1vk/iconfont.css'
 import Field from '@/components/input/field/field'
 import { getConfig, getTimestamp, saveNavigatorConfig } from '@/utils/config'
-import { IInitNavigatorItem, initNavigatorItem } from '@/utils/init'
+import { IInitNavigatorItem, initNavigatorItem, intiNavigatorGroup } from '@/utils/init'
 import Modal, { confirm as Confirm } from '@/components/modal/modal/modal'
 import Badge from '../../components/badge/badge/badge'
 import _Tab from '../../components/tab/tab/index'
-import axios from 'axios'
 import JsonP from 'jsonp'
+import Icon from '@/components/icon/icon/icon'
+
+interface GroupEdit {
+    id?: number,
+    name?: string,
+    type: "add" | "update"
+}
 
 const { Tab, TabItem } = _Tab
 const backgroundStyle = {
-    background: `url(${require('../../asset/img/bg.jpg')})`
+    background: `url(${localStorage.getItem("CONFIG_BACKGROUND")})`
 }
 
 const logoStyle = {
@@ -26,12 +32,15 @@ const Home: React.FC = () => {
     let [searchText, setSearchText] = useState<string>("")
     let [targetUrl, setTargetUrl] = useState<string>("");
     let [faviconUrl, setFaviconUrl] = useState<string>("");
+    let [editTab, setEditTab] = useState<number>(1);
     let [modal, setModal] = useState<boolean>(false);
+    let [groupModal, setGroupModal] = useState<boolean>(false);
     let [navigator, setNavigator] = useState<INavigatorConfig>(getConfig('CONFIG_NAVIGATOR'));
     let [isEditting, setIsEditting] = useState<boolean>(false);
     let [active, setActive] = useState<number>(0);
     let [quickSearchList, setQuickSearchList] = useState<Array<string>>([]);
     let [quickSearchVisible, setQuickSearchVisible] = useState<boolean>(false);
+    let [group, setGroup] = useState<GroupEdit>({ type: 'add' });
     useEffect(() => {
         saveNavigatorConfig(navigator)
     }, [navigator])
@@ -53,7 +62,7 @@ const Home: React.FC = () => {
 
     }, [searchText])
 
-    document.onclick = (e) => {
+    document.onclick = () => {
         setQuickSearchVisible(false);
     }
 
@@ -82,10 +91,35 @@ const Home: React.FC = () => {
                 />
                 <QuickSearch quickSearchList={quickSearchList} quickSearchVisible={quickSearchVisible} />
             </div>
-            <Tab active={active} onTabChange={(key) => setActive(key)} className="navigator-content" mode="line" >
+            <Tab
+                active={active}
+                onTabChange={(key) => setActive(key)}
+                className="navigator-content"
+                mode="line"
+                extraRight={
+                    isEditting ?
+                        <Icon icon="icon-jiahao" className="tab-add-btn" onClick={() => {
+                            setGroupModal(true);
+                            setGroup({ type: 'add' })
+                        }} />
+                        : <></>}
+            >
                 {
                     navigator.data.map((group, key) => {
-                        return <TabItem title={group.name} key={key}>
+                        return <TabItem
+                            title={
+                                <TabTitle
+                                    showCloseBtn={isEditting}
+                                    title={group.name}
+                                    onClose={(e) => { setNavigator(removeNavigatorGroup(navigator, group.id)) }}
+                                    onEdit={() => {
+                                        setGroupModal(true)
+                                        setGroup({ type: 'update', ...group })
+                                    }}
+                                />
+                            }
+                            key={key}
+                        >
                             <div className="navigator">
                                 {
                                     group.items.map((item, key1) => {
@@ -97,11 +131,22 @@ const Home: React.FC = () => {
                                             }}
                                             key={key1}
                                         >
-                                            <Icon style={{ borderRadius: "10px" }} src={item.favicon} onClick={() => { window.open(item.target, '_blank') }} />
+                                            <IconButton
+                                                style={{ borderRadius: "10px" }}
+                                                src={item.favicon}
+                                                onClick={() => { window.open(item.target, '_blank') }}
+                                            />
                                         </Badge>
                                     })
                                 }
-                                <Icon className="navigator-item" icon='icon-jiahao' onClick={() => setModal(true)} />
+                                <IconButton
+                                    className="navigator-item"
+                                    icon='icon-jiahao'
+                                    onClick={() => {
+                                        setModal(true);
+                                        setEditTab(group.id)
+                                    }}
+                                />
                             </div>
                         </TabItem>
                     })
@@ -112,7 +157,7 @@ const Home: React.FC = () => {
             visible={modal}
             title={"新增"}
             onConfirm={() => {
-                setNavigator(setNavigatorItem(navigator, { target: targetUrl, favicon: faviconUrl }, 1))
+                setNavigator(setNavigatorItem(navigator, { target: targetUrl, favicon: faviconUrl }, editTab))
                 setModal(false)
             }}
             onClose={() => setModal(false)}
@@ -123,8 +168,25 @@ const Home: React.FC = () => {
                 <Field title="图标链接" placeholder='图标链接(默认为favicon)' value={faviconUrl} onChange={(val) => { setFaviconUrl(val) }} />
             </>
         </Confirm>
+        <Confirm
+            visible={groupModal}
+            title={group.type === 'add' ? "新增" : "修改"}
+            onConfirm={() => {
+                if (group.type === 'add')
+                    setNavigator(addNavigatorGroup(navigator, group.name || ""))
+                else if (group.type === 'update')
+                    setNavigator(updateNavigatorGroup(navigator, group.name || "", group.id || -1))
+                setGroupModal(false)
+            }}
+            onClose={() => setGroupModal(false)}
+            onCancel={() => setGroupModal(false)}
+        >
+            <>
+                <Field title="名称" placeholder='分组名称' value={group.name} onChange={(val) => { setGroup({ ...group, name: val }) }} />
+            </>
+        </Confirm>
         <div className='tool-bar'>
-            <Icon className='setting' icon='icon-setting-fill' onClick={() => setIsEditting(!isEditting)} />
+            <IconButton className='setting' icon='icon-setting-fill' onClick={() => setIsEditting(!isEditting)} />
         </div>
     </div >
 }
@@ -157,6 +219,38 @@ const removeNavigatorItem: (navi: INavigatorConfig, itemid: number, groupid: num
     }
 }
 
+const addNavigatorGroup: (navi: INavigatorConfig, groupName: string) => INavigatorConfig = (navi, groupName) => {
+    return {
+        ...navi,
+        data: [
+            ...navi.data,
+            intiNavigatorGroup(groupName)
+        ]
+    }
+}
+
+const updateNavigatorGroup: (navi: INavigatorConfig, groupName: string, groupid: number) => INavigatorConfig = (navi, groupName, groupid) => {
+    return {
+        ...navi,
+        data: [
+            ...navi.data.map(item => {
+                if (item.id === groupid)
+                    item.name = groupName;
+                return item;
+            })
+        ]
+    }
+}
+
+const removeNavigatorGroup: (navi: INavigatorConfig, groupid: number) => INavigatorConfig = (navi, groupid) => {
+    return {
+        ...navi,
+        data: [
+            ...navi.data.filter(item => item.id !== groupid)
+        ]
+    }
+}
+
 const QuickSearch = (props: { quickSearchList: Array<string>, quickSearchVisible: boolean }) => {
     return <div
         className='quickSearch'
@@ -175,6 +269,35 @@ const QuickSearch = (props: { quickSearchList: Array<string>, quickSearchVisible
             }
         </ul>
     </div>
+}
+
+const TabTitle = (props: {
+    title: string,
+    showCloseBtn: boolean,
+    onClose: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => any,
+    onEdit: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => any
+}) => {
+    return <span>
+        {props.title}
+        {props.showCloseBtn ? <>
+            <Icon
+                icon="icon-bianji-m"
+                className='tab-edit-btn'
+                onClick={(e) => {
+                    e.stopPropagation();
+                    props.onEdit(e);
+                }}
+            />
+            <Icon
+                icon="icon-guanbi-m"
+                className='tab-close-btn'
+                onClick={(e) => {
+                    e.stopPropagation();
+                    props.onClose(e);
+                }}
+            />
+        </> : null}
+    </span>
 }
 
 interface BAIDU_RESPONSE {

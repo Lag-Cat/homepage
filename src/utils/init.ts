@@ -23,6 +23,16 @@ export const initNavigatorItem: (item: IInitNavigatorItem) => INavigatorItem = (
   };
 };
 
+export const intiNavigatorGroup: (groupName: string) => INavigatorGroup = (
+  groupName,
+) => {
+  return {
+    id: getTimestamp(),
+    name: groupName,
+    items: [],
+  };
+};
+
 export const initNavigator = (): INavigatorConfig => {
   setConfig('CONFIG_NAVIGATOR', navigatorConfig);
   return navigatorConfig;
