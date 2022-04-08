@@ -7,8 +7,9 @@ interface TabProps {
     active?: number | string;
     onTabChange?: (activeKey: number) => any;
     className?: string;
-    mode?: 'card' | 'line',
+    mode?: 'card' | 'line';
     extraRight?: string | ReactElement | ReactNode;
+    hideTabs?: boolean;
 }
 const Tab: React.FC<TabProps> = (props) => {
     let [linePosition, _setLinePosition] = useState<number>(0);
@@ -54,7 +55,7 @@ const Tab: React.FC<TabProps> = (props) => {
 
     return <div className={classNames('bui-tab', props.className)}>
         <ul className="bui-tab-tabs">
-            {React.Children.map(props.children, (element: any, index) => {
+            {!props.hideTabs ? React.Children.map(props.children, (element: any, index) => {
                 return (!props.mode || props.mode === 'card') ? <li
                     className={classNames("bui-tab-card", index == props.active ? "bui-tab-card-active" : "")}
                     onClick={() => handleTabChange(index)}
@@ -73,11 +74,11 @@ const Tab: React.FC<TabProps> = (props) => {
                     >
                         {element.props.title}
                     </li>
-            })}
-            {props.mode === 'line' ? <div
+            }) : null}
+            {!props.hideTabs ? props.mode === 'line' ? <div
                 className="bui-tab-underline"
                 style={{ transform: `translateX(${linePosition}px)`, width: `${lineWidth}px`, transitionDuration: "0.3s" }}
-            ></div> : null}
+            ></div> : null : null}
             <li>
                 {props.extraRight}
             </li>

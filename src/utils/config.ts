@@ -1,10 +1,13 @@
 import { isNullOrEmpty } from './string';
-import { initNavigator, initSearchBox } from './init';
+import { initBackground, initNavigator, initSearchBox } from './init';
 
 const CONFIG_NAVIGATOR = 'CONFIG_NAVIGATOR';
 
 declare type TConfig = INavigatorConfig;
-declare type TConfigName = 'CONFIG_NAVIGATOR' | 'CONFIG_SEARCHBOX';
+declare type TConfigName =
+  | 'CONFIG_NAVIGATOR'
+  | 'CONFIG_SEARCHBOX'
+  | 'CONFIG_BACKGROUND';
 
 export const getConfig = (configName: TConfigName) => {
   let configStr = localStorage.getItem(configName);
@@ -14,6 +17,8 @@ export const getConfig = (configName: TConfigName) => {
         return initNavigator();
       case 'CONFIG_SEARCHBOX':
         return initSearchBox();
+      case 'CONFIG_BACKGROUND':
+        return initBackground();
       default:
         return {};
     }

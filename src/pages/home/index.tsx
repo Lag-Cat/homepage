@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Search from '../../components/input/search'
 import IconButton from '../../components/icon/icon/iconButton'
-import './index.less'
+import layout from './index.less'
 // import '../../asset/iconfont/font_3250542_jbiasqyb1vk/iconfont.css'
 import Field from '@/components/input/field/field'
 import { getConfig, getTimestamp, saveNavigatorConfig } from '@/utils/config'
@@ -11,6 +11,9 @@ import Badge from '../../components/badge/badge/badge'
 import _Tab from '../../components/tab/tab/index'
 import JsonP from 'jsonp'
 import Icon from '@/components/icon/icon/icon'
+import { history, useSelector } from 'umi'
+import { IndexModels } from '@/models'
+import classNames from 'classnames'
 
 interface GroupEdit {
     id?: number,
@@ -19,9 +22,9 @@ interface GroupEdit {
 }
 
 const { Tab, TabItem } = _Tab
-const backgroundStyle = {
-    background: `url(${localStorage.getItem("CONFIG_BACKGROUND")})`
-}
+// const backgroundStyle = {
+//     background: `url(${localStorage.getItem("CONFIG_BACKGROUND")})`
+// }
 
 const logoStyle = {
     height: "200px",
@@ -41,13 +44,17 @@ const Home: React.FC = () => {
     let [quickSearchList, setQuickSearchList] = useState<Array<string>>([]);
     let [quickSearchVisible, setQuickSearchVisible] = useState<boolean>(false);
     let [group, setGroup] = useState<GroupEdit>({ type: 'add' });
+    let searchBoxRef = useRef<HTMLInputElement>(null);
+    let backgroundStyle = useSelector<IndexModels, IBackground>(state => state.settings.background)
+    let [selectItem, setSelectItem] = useState<number>(-1);
+
     useEffect(() => {
         saveNavigatorConfig(navigator)
     }, [navigator])
 
-    useEffect(() => {
-        if (searchText) {
-            getQuickQueryList(searchText).then((list) => {
+    let onSearchTextChange = (text?: string) => {
+        if (text) {
+            getQuickQueryList(text).then((list) => {
                 if ((list as BAIDU_RESPONSE).g) {
                     setQuickSearchList((list as BAIDU_RESPONSE).g.map(item => item.q));
                     setQuickSearchVisible(true)
@@ -59,27 +66,55 @@ const Home: React.FC = () => {
         else {
             setQuickSearchList([])
         }
+    }
 
-    }, [searchText])
+    useEffect(() => {
+        if (selectItem >= 0) {
+            setSearchText(quickSearchList[selectItem])
+        }
+    }, [selectItem])
+
+    useEffect(() => {
+        let onWindowFocus = () => {
+            searchBoxRef?.current?.focus();
+        }
+        window.addEventListener("focus", onWindowFocus);
+
+        return () => {
+            window.removeEventListener("focus", onWindowFocus);
+        }
+    })
 
     document.onclick = () => {
         setQuickSearchVisible(false);
     }
 
-    return <div className='homepage' style={{ ...backgroundStyle }}>
-        <div className='toolbar'>
+    return <div className={layout['homepage']} style={{ background: `url(${backgroundStyle.url})` }}>
+        <div className={layout['toolbar']}>
 
         </div>
-        <div className="main-content">
-            <div className={'logo'} style={{ ...logoStyle }}></div>
-            <div className='searchBox'>
+        <div className={layout["main-content"]}>
+            <div className={layout['logo']} style={{ ...logoStyle }}></div>
+            <div className={layout['searchBox']}>
                 <Search
                     searchText='搜索'
                     value={searchText}
-                    onChange={val => setSearchText(val ? val : "")}
+                    onChange={val => {
+                        setSearchText(val ? val : "")
+                        onSearchTextChange(val);
+                    }}
                     onKeyDown={event => {
-                        if (event.key === 'Enter')
+                        if (event.key === 'Enter') {
                             window.open(`https://www.baidu.com/s?wd=${searchText}`, '_blank')
+                            setSelectItem(-1);
+                        } else if (event.key === 'ArrowUp') {
+                            setSelectItem(selectItem - 1);
+                        } else if (event.key === 'ArrowDown') {
+                            setSelectItem(selectItem + 1);
+                        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                        } else {
+                            setSelectItem(-1);
+                        }
                     }}
                     onSearch={
                         () => window.open(`https://www.baidu.com/s?wd=${searchText}`, '_blank')
@@ -88,17 +123,18 @@ const Home: React.FC = () => {
                         quickSearchList.length > 0 && setQuickSearchVisible(true);
                         e.stopPropagation();
                     }}
+                    ref={searchBoxRef}
                 />
-                <QuickSearch quickSearchList={quickSearchList} quickSearchVisible={quickSearchVisible} />
+                <QuickSearch quickSearchList={quickSearchList} quickSearchVisible={quickSearchVisible} selected={selectItem} />
             </div>
             <Tab
                 active={active}
                 onTabChange={(key) => setActive(key)}
-                className="navigator-content"
+                className={layout["navigator-content"]}
                 mode="line"
                 extraRight={
                     isEditting ?
-                        <Icon icon="icon-jiahao" className="tab-add-btn" onClick={() => {
+                        <Icon icon="icon-jiahao" className={layout["tab-add-btn"]} onClick={() => {
                             setGroupModal(true);
                             setGroup({ type: 'add' })
                         }} />
@@ -120,11 +156,11 @@ const Home: React.FC = () => {
                             }
                             key={key}
                         >
-                            <div className="navigator">
+                            <div className={layout["navigator"]}>
                                 {
                                     group.items.map((item, key1) => {
                                         return <Badge
-                                            className="navigator-item"
+                                            className={layout["navigator-item"]}
                                             dot={isEditting && <div style={{ fontSize: "13px", lineHeight: "10px" }}>×</div>}
                                             onClick={() => {
                                                 setNavigator(removeNavigatorItem(navigator, item.id, group.id))
@@ -140,7 +176,7 @@ const Home: React.FC = () => {
                                     })
                                 }
                                 <IconButton
-                                    className="navigator-item"
+                                    className={layout["navigator-item"]}
                                     icon='icon-jiahao'
                                     onClick={() => {
                                         setModal(true);
@@ -181,12 +217,11 @@ const Home: React.FC = () => {
             onClose={() => setGroupModal(false)}
             onCancel={() => setGroupModal(false)}
         >
-            <>
-                <Field title="名称" placeholder='分组名称' value={group.name} onChange={(val) => { setGroup({ ...group, name: val }) }} />
-            </>
+            <Field title="名称" placeholder='分组名称' value={group.name} onChange={(val) => { setGroup({ ...group, name: val }) }} />
         </Confirm>
-        <div className='tool-bar'>
-            <IconButton className='setting' icon='icon-setting-fill' onClick={() => setIsEditting(!isEditting)} />
+        <div className={layout['tool-bar']}>
+            <IconButton className={layout['setting']} icon='icon-setting-fill' onClick={() => setIsEditting(!isEditting)} />
+            <IconButton className={layout['setting']} icon='icon-setting-fill' onClick={() => history.push("/setting")} />
         </div>
     </div >
 }
@@ -251,18 +286,18 @@ const removeNavigatorGroup: (navi: INavigatorConfig, groupid: number) => INaviga
     }
 }
 
-const QuickSearch = (props: { quickSearchList: Array<string>, quickSearchVisible: boolean }) => {
+const QuickSearch = (props: { quickSearchList: Array<string>, quickSearchVisible: boolean, selected: number }) => {
     return <div
-        className='quickSearch'
+        className={layout['quickSearch']}
         style={{ display: props.quickSearchVisible ? 'block' : 'none' }}
         onClick={
             (e) => { e.stopPropagation() }
         }
     >
-        <ul className='quickSearch-list'>
+        <ul className={layout['quickSearch-list']}>
             {
                 props.quickSearchList.map((item, key) => (
-                    <li className='quickSearch-list-item' key={key} onClick={() => window.open(`https://www.baidu.com/s?wd=${item}`, '_blank')}>
+                    <li className={classNames(layout['quickSearch-list-item'], key === props.selected ? layout['quickSearch-list-item-selected'] : '')} key={key} onClick={() => window.open(`https://www.baidu.com/s?wd=${item}`, '_blank')}>
                         <span>{item}</span>
                     </li>)
                 )
@@ -282,7 +317,7 @@ const TabTitle = (props: {
         {props.showCloseBtn ? <>
             <Icon
                 icon="icon-bianji-m"
-                className='tab-edit-btn'
+                className={layout['tab-edit-btn']}
                 onClick={(e) => {
                     e.stopPropagation();
                     props.onEdit(e);
@@ -290,7 +325,7 @@ const TabTitle = (props: {
             />
             <Icon
                 icon="icon-guanbi-m"
-                className='tab-close-btn'
+                className={layout['tab-close-btn']}
                 onClick={(e) => {
                     e.stopPropagation();
                     props.onClose(e);
@@ -298,6 +333,23 @@ const TabTitle = (props: {
             />
         </> : null}
     </span>
+}
+
+declare type TNavigatorBtn = 'icon' | 'label' | 'text'
+const renderBtn = (type: TNavigatorBtn, icon: string, text: string) => {
+    switch (type) {
+        case "icon":
+            return <IconButton src={icon} ></IconButton>
+        case "label":
+            return <div>
+                <Icon src={icon} />
+                <span>{text}</span>
+            </div>
+        case 'text':
+            return <div><span>{text}</span></div>
+        default:
+            return <IconButton src={icon} ></IconButton>
+    }
 }
 
 interface BAIDU_RESPONSE {
@@ -318,12 +370,7 @@ const getQuickQueryList = (searchText: string) => {
     const cb = `jQuery${getTimestamp()}`
     const url = `https://www.baidu.com/sugrec?prod=pc&from=pc_web&wd=${encodeURIComponent(searchText)}&cb=${cb}`
     return new Promise((resolve, reject) => {
-        // fetch(url, { method: 'get' }).then((response) => {
-        //     console.log(response);
-        //     resolve(response)
-        // })
         (window as any)[cb] = (val: BAIDU_RESPONSE) => {
-            console.log(val, "test");
             resolve(val)
             delete (window as any)[cb]
         }

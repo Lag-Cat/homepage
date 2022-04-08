@@ -15,6 +15,7 @@ interface INavigatorGroup {
   id: number;
   name: string;
   items: INavigatorItem[];
+  itemType?: 'icon' | 'label' | 'text';
 }
 
 interface ISearchBox {
@@ -26,4 +27,8 @@ interface ISearchBoxWebsite {
   url: string;
   name: string;
   icon: string;
+}
+
+interface IBackground {
+  url: string;
 }

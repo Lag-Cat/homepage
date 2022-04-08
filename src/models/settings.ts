@@ -1,15 +1,18 @@
+import { setConfig } from '@/utils/config';
+import { initBackground } from '@/utils/init';
 import { ImmerReducer, Reducer } from 'umi';
+import { IAction } from '.';
 
 export interface SettingsModelState {
-  test: string;
+  background: IBackground;
 }
-
 export interface SettingsModelType {
   namespace: 'settings';
   state: SettingsModelState;
   effects: {};
   reducers: {
     saveBackgroundSettings: ImmerReducer<SettingsModelState>;
+    initBackgroundSettings: ImmerReducer<SettingsModelState>;
   };
   subscriptions: {};
 }
@@ -17,14 +20,23 @@ export interface SettingsModelType {
 const settingsModel: SettingsModelType = {
   namespace: 'settings',
   state: {
-    test: 'asd',
+    background: localStorage.getItem('CONFIG_BACKGROUND')
+      ? JSON.parse(localStorage.getItem('CONFIG_BACKGROUND') as string)
+      : initBackground(),
   },
   effects: {},
   reducers: {
-    saveBackgroundSettings(state, action) {
+    saveBackgroundSettings(state, action: IAction<IBackground>) {
+      setConfig('CONFIG_BACKGROUND', action.payload);
       return {
         ...state,
-        ...{ test: action.payload },
+        ...{ background: { ...action.payload } },
+      };
+    },
+    initBackgroundSettings(state, action: IAction<IBackground>) {
+      return {
+        ...state,
+        ...{ background: { ...action.payload } },
       };
     },
   },

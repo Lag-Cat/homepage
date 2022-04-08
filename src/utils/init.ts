@@ -3,8 +3,7 @@ import { navigatorConfig } from '@/config/navigator';
 import { DEFAULT_SEARCHBOX } from '@/config/searchBox';
 import { setConfig, getTimestamp } from './config';
 import { isNullOrEmpty } from './string';
-
-const initConfig = () => {};
+import { DEFAULT_BACKGROUND } from '@/config/background';
 
 export interface IInitNavigatorItem {
   target: string;
@@ -42,3 +41,8 @@ export const initSearchBox = (): ISearchBox => {
   setConfig('CONFIG_NAVIGATOR', DEFAULT_SEARCHBOX);
   return DEFAULT_SEARCHBOX;
 };
+
+export const initBackground = ():IBackground=>{
+  setConfig("CONFIG_BACKGROUND",DEFAULT_BACKGROUND);
+  return DEFAULT_BACKGROUND;
+}

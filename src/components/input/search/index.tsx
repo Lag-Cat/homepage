@@ -17,7 +17,8 @@ interface Props {
     isShowBorder?: boolean
 }
 
-const Search: React.FC<Props> = (props) => {
+const Search: React.FC<Props & { ref?: React.Ref<HTMLInputElement> }> = React.forwardRef((props, ref) => {
+
     let [showBorder, setShowBorder] = useState<boolean>(false);
     let onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         props.onChange && props.onChange(e.target.value)
@@ -38,6 +39,7 @@ const Search: React.FC<Props> = (props) => {
             onBlur={() => { props.onFieldBlur && props.onFieldBlur() }}
             onKeyDown={(e) => { props.onKeyDown && props.onKeyDown(e) }}
             onClick={(e) => { props.onFieldClick && props.onFieldClick(e) }}
+            ref={ref}
         />
         <button
             className="bui-searchBox-button"
@@ -47,6 +49,7 @@ const Search: React.FC<Props> = (props) => {
             {props.searchText}
         </button>
     </div>
-}
+
+})
 
 export default Search;
