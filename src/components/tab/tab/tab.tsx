@@ -1,4 +1,4 @@
-import React, { ReactElement, ReactNode, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactElement, ReactNode, useEffect, useRef, useState } from 'react'
 import { TabItemProps } from './tabItem'
 import './index.less'
 import classNames from 'classnames';
@@ -10,10 +10,12 @@ interface TabProps {
     mode?: 'card' | 'line';
     extraRight?: string | ReactElement | ReactNode;
     hideTabs?: boolean;
+    lineStyle?: CSSProperties;
 }
 const Tab: React.FC<TabProps> = (props) => {
     let [linePosition, _setLinePosition] = useState<number>(0);
     let [lineWidth, _setLineWidth] = useState<number>(0);
+    let liRef = useRef<HTMLLIElement>(null);
 
     const handleTabChange = (key: number) => {
         const { onTabChange } = props;
@@ -28,6 +30,17 @@ const Tab: React.FC<TabProps> = (props) => {
         }
     }, [props.active])
 
+    useEffect(() => {
+        let dom = liRef.current;
+        let checkWidthFC = checkWidth(0);
+        if (dom) {
+            checkWidthFC((dom as any).clientWidth, () => {
+                setLinePosition((dom as any).offsetLeft)
+                setLineWidth((dom as any).clientWidth)
+            })
+        }
+    }, [props.children])
+
     const setLinePosition = (position: number) => {
         _setLinePosition(position + 10)//padding
     }
@@ -35,23 +48,6 @@ const Tab: React.FC<TabProps> = (props) => {
     const setLineWidth = (position: number) => {
         _setLineWidth(position - 20)//padding
     }
-
-    useEffect(() => {
-        let checkWidthFC = checkWidth(0);
-        let interval = setInterval(() => {
-            let dom = getElementByClassName("bui-tab-active", 0)
-            if (dom) {
-                checkWidthFC((dom as any).clientWidth, () => {
-                    setLinePosition((dom as any).offsetLeft)
-                    setLineWidth((dom as any).clientWidth)
-                })
-            }
-        }, 500)
-
-        return () => {
-            clearInterval(interval)
-        }
-    }, [])
 
     return <div className={classNames('bui-tab', props.className)}>
         <ul className="bui-tab-tabs">
@@ -71,13 +67,14 @@ const Tab: React.FC<TabProps> = (props) => {
                     : <li
                         className={classNames("bui-tab-line", index == props.active ? "bui-tab-active" : "")}
                         onClick={() => handleTabChange(index)}
+                        ref={index == props.active ? liRef : null}
                     >
                         {element.props.title}
                     </li>
             }) : null}
             {!props.hideTabs ? props.mode === 'line' ? <div
                 className="bui-tab-underline"
-                style={{ transform: `translateX(${linePosition}px)`, width: `${lineWidth}px`, transitionDuration: "0.3s" }}
+                style={{ transform: `translateX(${linePosition}px)`, width: `${lineWidth}px`, transitionDuration: "0.3s", ...props.lineStyle }}
             ></div> : null : null}
             <li>
                 {props.extraRight}

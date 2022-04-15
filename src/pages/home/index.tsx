@@ -21,6 +21,12 @@ interface GroupEdit {
     type: "add" | "update"
 }
 
+interface ItemEdit {
+    type: "add" | "update";
+    groupId: number;
+    data?: INavigatorItem;
+}
+
 const { Tab, TabItem } = _Tab
 // const backgroundStyle = {
 //     background: `url(${localStorage.getItem("CONFIG_BACKGROUND")})`
@@ -33,9 +39,7 @@ const logoStyle = {
 
 const Home: React.FC = () => {
     let [searchText, setSearchText] = useState<string>("")
-    let [targetUrl, setTargetUrl] = useState<string>("");
-    let [faviconUrl, setFaviconUrl] = useState<string>("");
-    let [editTab, setEditTab] = useState<number>(1);
+    let [editTab, setEditTab] = useState<ItemEdit>({ type: 'add', groupId: 0 });
     let [modal, setModal] = useState<boolean>(false);
     let [groupModal, setGroupModal] = useState<boolean>(false);
     let [navigator, setNavigator] = useState<INavigatorConfig>(getConfig('CONFIG_NAVIGATOR'));
@@ -159,20 +163,29 @@ const Home: React.FC = () => {
                             <div className={layout["navigator"]}>
                                 {
                                     group.items.map((item, key1) => {
-                                        return <Badge
-                                            className={layout["navigator-item"]}
-                                            dot={isEditting && <div style={{ fontSize: "13px", lineHeight: "10px" }}>×</div>}
-                                            onClick={() => {
-                                                setNavigator(removeNavigatorItem(navigator, item.id, group.id))
-                                            }}
-                                            key={key1}
-                                        >
-                                            <IconButton
-                                                style={{ borderRadius: "10px" }}
-                                                src={item.favicon}
-                                                onClick={() => { window.open(item.target, '_blank') }}
-                                            />
-                                        </Badge>
+                                        return <div key={key1}>
+                                            <Badge
+                                                className={layout["navigator-item"]}
+                                                dot={isEditting && <div style={{ fontSize: "13px", lineHeight: "10px" }}>×</div>}
+                                                onClick={() => {
+                                                    setNavigator(removeNavigatorItem(navigator, item.id, group.id))
+                                                }}
+                                            >
+                                                <IconButton
+                                                    style={{ borderRadius: "10px" }}
+                                                    src={item.favicon}
+                                                    onClick={() => {
+                                                        if (!isEditting)
+                                                            window.open(item.target, '_blank')
+                                                        else {
+                                                            setModal(true);
+                                                            setEditTab({ groupId: group.id, type: 'update', data: item })
+                                                        }
+                                                    }}
+                                                />
+                                            </Badge>
+                                            <div className={layout["navigator-item-title"]}>{item.title}</div>
+                                        </div>
                                     })
                                 }
                                 <IconButton
@@ -180,7 +193,7 @@ const Home: React.FC = () => {
                                     icon='icon-jiahao'
                                     onClick={() => {
                                         setModal(true);
-                                        setEditTab(group.id)
+                                        setEditTab({ groupId: group.id, type: 'add', data: { target: "", favicon: "" } as any })
                                     }}
                                 />
                             </div>
@@ -191,17 +204,55 @@ const Home: React.FC = () => {
         </div>
         <Confirm
             visible={modal}
-            title={"新增"}
+            title={editTab.type === 'add' ? '新增' : '修改'}
             onConfirm={() => {
-                setNavigator(setNavigatorItem(navigator, { target: targetUrl, favicon: faviconUrl }, editTab))
+                if (editTab.type === 'add')
+                    setNavigator(
+                        addNavigatorItem(
+                            navigator,
+                            editTab
+                        )
+                    )
+                else
+                    setNavigator(
+                        updateNavigatorItem(
+                            navigator,
+                            editTab
+                        )
+                    )
                 setModal(false)
             }}
             onClose={() => setModal(false)}
             onCancel={() => setModal(false)}
         >
             <>
-                <Field title="目标链接" placeholder='目标链接' value={targetUrl} onChange={(val) => { setTargetUrl(val) }} />
-                <Field title="图标链接" placeholder='图标链接(默认为favicon)' value={faviconUrl} onChange={(val) => { setFaviconUrl(val) }} />
+                <Field title="目标链接" placeholder='目标链接' value={editTab.data?.target} onChange={(val) => {
+                    setEditTab({
+                        ...editTab,
+                        data: ({
+                            ...editTab.data,
+                            target: val
+                        } as INavigatorItem)
+                    })
+                }} />
+                <Field title="图标链接" placeholder='图标链接(默认为favicon)' value={editTab.data?.favicon} onChange={(val) => {
+                    setEditTab({
+                        ...editTab,
+                        data: ({
+                            ...editTab.data,
+                            favicon: val
+                        } as INavigatorItem)
+                    })
+                }} />
+                <Field title="名称" placeholder='名称' value={editTab.data?.title} onChange={(val) => {
+                    setEditTab({
+                        ...editTab,
+                        data: ({
+                            ...editTab.data,
+                            title: val
+                        } as INavigatorItem)
+                    })
+                }} />
             </>
         </Confirm>
         <Confirm
@@ -221,20 +272,42 @@ const Home: React.FC = () => {
         </Confirm>
         <div className={layout['tool-bar']}>
             <IconButton className={layout['setting']} icon='icon-setting-fill' onClick={() => setIsEditting(!isEditting)} />
-            <IconButton className={layout['setting']} icon='icon-setting-fill' onClick={() => history.push("/setting")} />
+            <IconButton className={layout['setting']} icon='icon-ego-menu' onClick={() => history.push("/setting")} />
         </div>
     </div >
 }
 
-const setNavigatorItem: (navi: INavigatorConfig, item: IInitNavigatorItem, groupid: number) => INavigatorConfig = (navi, item, groupid) => {
+const addNavigatorItem: (navi: INavigatorConfig, item: ItemEdit) => INavigatorConfig = (navi, item) => {
     return {
         ...navi,
         data: [
             ...navi.data.map(naviItem => {
-                if (naviItem.id === groupid) {
-                    naviItem.items.push(initNavigatorItem({ target: item.target, favicon: item.favicon }))
+                if (naviItem.id === item.groupId) {
+                    naviItem.items.push(initNavigatorItem({
+                        target: item.data?.target ? item.data?.target : "",
+                        favicon: item.data?.favicon ? item.data?.favicon : "",
+                    }))
                 }
                 return naviItem
+            })
+        ]
+    }
+}
+
+const updateNavigatorItem: (navi: INavigatorConfig, item: ItemEdit) => INavigatorConfig = (navi, item) => {
+    return {
+        ...navi,
+        data: [
+            ...navi.data.map(grouItem => {
+                if (grouItem.id === item.groupId) {
+                    grouItem.items = grouItem.items.map(naviItem => {
+                        if (naviItem.id === item.data?.id) {
+                            return item.data;
+                        }
+                        return naviItem;
+                    })
+                }
+                return grouItem
             })
         ]
     }

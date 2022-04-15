@@ -1,6 +1,8 @@
 import classNames from 'classnames';
 import React from 'react'
 import './index.less'
+import Image from '../../image'
+
 interface Props {
     src?: string;
     icon?: string;
@@ -11,7 +13,7 @@ interface Props {
 }
 const IconButton: React.FC<Props> = (props) => {
     return <div style={{ ...props.style }} className={classNames('bui-iconbtn', props.className)} onClick={props.onClick}>
-        {props.src && <img src={props.src} />}
+        {props.src && <Image src={props.src} />}
         {props.icon && <div className={classNames(props.iconPre || 'iconfont', props.icon)}></div>}
     </div>
 }

@@ -7,7 +7,9 @@ import Tab from '@/components/tab/tab/tab';
 import TabItem from '@/components/tab/tab/tabItem';
 import Card from '@/components/panel/card/card';
 import Icon from '@/components/icon/icon/icon';
-
+import Image from '@/components/image/image/image'
+import { getSizeByScale } from '@/utils/screen';
+import { history } from 'umi'
 
 // interface Props extends ConnectProps {
 //     settingState: SettingsModelState
@@ -41,6 +43,11 @@ const SettingPage: React.FC<Props> = (props) => {
         <div className='header'>
             {!showSider ? <Icon icon="icon-ego-menu" className="setting-icon" /> : null}
             <span className='title'>设置</span>
+            <span className="setting-icon setting-icon-home">
+                <Icon icon="icon-shouye" onClick={() => {
+                    history.push("/home")
+                }} />
+            </span>
         </div>
         <div className='main-content'>
             {showSider ? <div className='sider'>
@@ -53,8 +60,26 @@ const SettingPage: React.FC<Props> = (props) => {
             </div> : null}
             <div className="content">
                 <Tab active={actived} onTabChange={(val) => setActived(val)} className="tabs" hideTabs>
-                    <TabItem title="aa">
-                        <Card>
+                    <TabItem>
+                        <Card className="background-settings">
+                            <div className="preview">
+                                <div className='preview-item'>
+                                    <div className="preview-item-pic"><Image style={{ height: getSizeByScale(3, 4, 0, 250) + "px", width: "250px", objectFit: "cover" }} src={background.url} /></div>
+                                    <div className="preview-item-desc">4:3</div>
+                                </div>
+                                <div className='preview-item'>
+                                    <div className="preview-item-pic"><Image style={{ height: getSizeByScale(9, 16, 0, 250) + "px", width: "250px", objectFit: "cover" }} src={background.url} /></div>
+                                    <div className="preview-item-desc">16:9</div>
+                                </div>
+                                <div className='preview-item'>
+                                    <div className="preview-item-pic"><Image style={{ height: getSizeByScale(10, 16, 0, 250) + "px", width: "250px", objectFit: "cover" }} src={background.url} /></div>
+                                    <div className="preview-item-desc">16:10</div>
+                                </div>
+                                <div className='preview-item'>
+                                    <div className="preview-item-pic"><Image style={{ height: getSizeByScale(9, 21, 0, 250) + "px", width: "250px", objectFit: "cover" }} src={background.url} /></div>
+                                    <div className="preview-item-desc">21:9</div>
+                                </div>
+                            </div>
                             <Field
                                 title="背景图片"
                                 type="text"
